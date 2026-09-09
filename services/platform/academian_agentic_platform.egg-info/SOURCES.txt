@@ -1,0 +1,16 @@
+pyproject.toml
+academian_agentic_platform.egg-info/PKG-INFO
+academian_agentic_platform.egg-info/SOURCES.txt
+academian_agentic_platform.egg-info/dependency_links.txt
+academian_agentic_platform.egg-info/requires.txt
+academian_agentic_platform.egg-info/top_level.txt
+app/main.py
+app/agents/base.py
+app/agents/domain_agents.py
+app/agents/orchestrator.py
+app/api/routes.py
+app/api/schemas.py
+app/core/config.py
+app/db/init_db.py
+app/db/models.py
+app/db/session.py
