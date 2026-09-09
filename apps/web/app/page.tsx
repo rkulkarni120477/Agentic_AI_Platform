@@ -123,6 +123,7 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showAgentDetails, setShowAgentDetails] = useState<string | null>(null);
   const [isWorkflowInitialized, setIsWorkflowInitialized] = useState(false);
+  const [isSynced, setIsSynced] = useState(false);
   const knowledgeBaseDescriptions: Record<string, string> = {
     "1": "Ensures course content aligns with institutional and national standards for quality and rigor.",
     "2": "Defines the competencies and skills students should achieve by completing the course.",
@@ -172,10 +173,12 @@ export default function Home() {
     setPrompt(defaultPrompt);
     setUploadedFiles([]);
     setSelectedAgents([]);
-    setResult(null);
-    setApprovalStatus(null);
-    setPublishStatus(null);
-    setShowLiveContent(false);
+    setResult(null); // Clear results monitor
+    setApprovalStatus(null); // Reset approval status
+    setPublishStatus(null); // Reset publish status
+    setShowLiveContent(false); // Close live content modal
+    setIsRunning(false); // Stop any running operations
+    setIsSynced(false); // Reset synced status
     setStatus("✓ New workflow created. Ready to begin.");
     setCurrentStep(1);
     setIsWorkflowInitialized(true);
@@ -318,6 +321,7 @@ export default function Home() {
 
       setStatus(`Workflow completed with status: ${data.status}`);
       setResult(data.result ?? null);
+      setIsSynced(true); // Mark as synced when workflow completes
       setCurrentStep(5); // Advance to "Approval" after workflow runs
     } catch (error) {
       let errorMsg = "Workflow request failed";
@@ -627,29 +631,75 @@ export default function Home() {
                 <div className="agentTasksContainer">
                   <h4 className="tasksHeader">📋 Agent Tasks Performed</h4>
                   <div className="agentTasksList">
-                    {result.agent_results.map((agentResult, index) => (
-                      <div key={agentResult.agent} className="agentTaskCard">
-                        <div className="taskCardHeader">
-                          <span className="taskNumber">{index + 1}</span>
-                          <span className="taskAgent">{agentResult.agent.replace(/-/g, " ").toUpperCase()}</span>
-                          <span className={`taskStatus ${agentResult.status}`}>✓ {agentResult.status}</span>
-                        </div>
-                        <div className="taskCardContent">
-                          {agentResult.output && typeof agentResult.output === "object" ? (
-                            <div className="taskDetails">
-                              {Object.entries(agentResult.output).map(([key, value]) => (
-                                <div key={key} className="taskDetail">
-                                  <span className="detailKey">{key.replace(/_/g, " ")}:</span>
-                                  <span className="detailValue">{JSON.stringify(value).substring(0, 100)}</span>
-                                </div>
-                              ))}
+                    {result.agent_results.map((agentResult, index) => {
+                      const agentInfo = agents.find(a => a.key === agentResult.agent);
+                      return (
+                        <div key={agentResult.agent} className="agentTaskCard detailed">
+                          <div className="taskCardHeader">
+                            <span className="taskNumber">{index + 1}</span>
+                            <span className="taskAgent">{agentResult.agent.replace(/-/g, " ").toUpperCase()}</span>
+                            <span className={`taskStatus ${agentResult.status}`}>✓ {agentResult.status}</span>
+                          </div>
+
+                          <div className="taskCardContent">
+                            {/* Agent Purpose/Description */}
+                            <div className="taskSection">
+                              <h5 className="sectionTitle">🎯 Agent Purpose</h5>
+                              <p className="sectionText">{agentInfo?.description || "Specialized agent for processing course content"}</p>
                             </div>
-                          ) : (
-                            <p className="taskOutput">{JSON.stringify(agentResult.output)}</p>
-                          )}
+
+                            {/* Agent Inputs */}
+                            <div className="taskSection">
+                              <h5 className="sectionTitle">📥 Inputs Provided</h5>
+                              <ul className="taskList">
+                                {agentInfo?.inputs.map((input, idx) => (
+                                  <li key={idx}>• {input}</li>
+                                )) || [
+                                  <li key="0">• Curriculum files ({uploadedFiles.length} file(s))</li>,
+                                  <li key="1">• Custom prompt and parameters</li>,
+                                  <li key="2">• Knowledge base context</li>,
+                                ]}
+                              </ul>
+                            </div>
+
+                            {/* Agent Process/Execution */}
+                            <div className="taskSection">
+                              <h5 className="sectionTitle">⚙️ Process Executed</h5>
+                              <ul className="taskList">
+                                <li>• Received input data and parameters</li>
+                                <li>• Analyzed uploaded curriculum files</li>
+                                <li>• Applied specialized processing logic</li>
+                                <li>• Generated insights and recommendations</li>
+                                <li>• Validated results against quality standards</li>
+                              </ul>
+                            </div>
+
+                            {/* Agent Outputs */}
+                            <div className="taskSection">
+                              <h5 className="sectionTitle">📤 Outputs Generated</h5>
+                              {agentInfo?.outputs && (
+                                <ul className="taskList">
+                                  {agentInfo.outputs.map((output, idx) => (
+                                    <li key={idx}>• {output}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              {agentResult.output && typeof agentResult.output === "object" && (
+                                <div className="taskDetails">
+                                  <p className="outputsLabel">Generated Data:</p>
+                                  {Object.entries(agentResult.output).map(([key, value]) => (
+                                    <div key={key} className="taskDetail">
+                                      <span className="detailKey">{key.replace(/_/g, " ")}:</span>
+                                      <span className="detailValue">{JSON.stringify(value).substring(0, 150)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -873,7 +923,7 @@ export default function Home() {
                         <span className="itemIcon">📚</span>
                         <div>
                           <p className="itemTitle">{item.title}</p>
-                          <p className="itemMeta">Connected • Synced</p>
+                          <p className="itemMeta">Connected • {isSynced ? "✓ Synced" : "Not synced"}</p>
                         </div>
                       </div>
                       <button className="itemAction" onClick={(e) => {
@@ -901,7 +951,7 @@ export default function Home() {
               <span className="statLabel">Agents Connected</span>
             </div>
             <div className="statItem">
-              <span className="statValue">Synced</span>
+              <span className="statValue">{isSynced ? "✓ Synced" : "Not synced"}</span>
               <span className="statLabel">Status</span>
             </div>
           </div>

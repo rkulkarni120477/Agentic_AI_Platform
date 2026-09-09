@@ -1663,9 +1663,63 @@ h2 {
   padding: 0.8rem;
 }
 
+.agentTaskCard.detailed .taskCardContent {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.taskSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.taskSection:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.sectionText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.taskList {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.taskList li {
+  margin: 0.3rem 0;
+}
+
+.outputsLabel {
+  margin: 0.5rem 0 0.5rem 0;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 0.85rem;
+}
+
 .taskDetails {
   display: grid;
   gap: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 .taskDetail {
